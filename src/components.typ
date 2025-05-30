@@ -185,6 +185,8 @@
 #let progressive-outline(
   alpha: 60%,
   level: 1,
+  max-level: 1,  // 默认非活跃部分只显示到一级
+  active-max-level: 2,  // 活跃部分显示到二级
   transform: (cover: false, alpha: 60%, ..args, it) => if cover {
     text(utils.update-alpha(text.fill, alpha), it)
   } else {
@@ -212,15 +214,31 @@
         }
       }
     }
-    show outline.entry: it => transform(
-      cover: it.element.location().page() < start-page or it.element.location().page() >= end-page,
-      level: level,
-      alpha: alpha,
-      ..args,
-      it,
-    )
 
-    outline(..args)
+    show outline.entry: it => {
+      // 判断是否在活跃区域
+      let is-active = it.element.location().page() >= start-page and it.element.location().page() < end-page
+
+      // 判断是否应该显示该条目
+      let should-show = if is-active {
+        it.level <= active-max-level
+      } else {
+        it.level <= max-level
+      }
+
+      if should-show {
+        transform(
+          cover: not is-active,
+          level: level,
+          alpha: alpha,
+          ..args,
+          it,
+        )
+      }
+    }
+
+    // 使用自定义深度参数调用原始outline函数
+    outline(depth: calc.max(max-level, active-max-level), ..args)
   }
 )
 
@@ -353,6 +371,7 @@
           )
         },
       )
+      linebreak()
     }
     if cover {
       body

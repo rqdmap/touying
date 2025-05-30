@@ -602,6 +602,27 @@
   )
 }
 
+#let config-page-for-outline(
+  paper: _default,
+  header: _default,
+  footer: _default,
+  fill: _default,
+  margin: _default,
+  numbering: _default,
+  ..args,
+) = {
+  assert(args.pos().len() == 0, message: "Unexpected positional arguments.")
+  return (
+    outline-page: _get-dict-without-default((
+      paper: paper,
+      header: header,
+      footer: footer,
+      fill: fill,
+      margin: margin,
+      numbering: numbering,
+    )) + args.named(),
+  )
+}
 
 /// The default configurations
 #let default-config = utils.merge-dicts(
